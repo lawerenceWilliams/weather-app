@@ -1,140 +1,231 @@
-import React, { Component } from 'react';
-import './App.css';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core/styles';
-
+import React from 'react';
 // import PropTypes from 'prop-types';
-// import List from '@material-ui/core/List';
-// import ListItem from '@material-ui/core/ListItem';
-// import ListItemText from '@material-ui/core/ListItemText';
-// import Avatar from '@material-ui/core/Avatar';
-// import ImageIcon from '@material-ui/icons/Image';
-// import WorkIcon from '@material-ui/icons/Work';
-// import BeachAccessIcon from '@material-ui/icons/BeachAccess';
 
-// Styling For Button and Current TextBox
+import Button from '@material-ui/core/Button';
+import moment from 'moment';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import withStyles from '@material-ui/core/styles/withStyles';
+import Grid from '@material-ui/core/Grid';
+
 const styles = theme => ({
-  button: {
-    margin: theme.spacing.unit,
+  main: {
+    width: 'auto',
+    display: 'block', // Fix IE 11 issue.
+    marginLeft: theme.spacing.unit * 3,
+    marginRight: theme.spacing.unit * 3,
+    [theme.breakpoints.up(400 + theme.spacing.unit * 3 * 2)]: {
+      width: 600,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    },
   },
-  input: {
-    display: 'none',
-  }
-  // root: {
-  //   width: '100%',
-  //   maxWidth: 360,
-  //   backgroundColor: theme.palette.background.paper,
-  // },
+  paper: {
+    marginTop: theme.spacing.unit * 8,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`,
+  },
+  avatar: {
+    margin: theme.spacing.unit,
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing.unit,
+  },
+  submit: {
+    marginTop: theme.spacing.unit * 3,
+  },
 });
 
 class App extends React.Component {
   state = {
-    zip: "",
+    zip: '',
     current: null,
-    forecast: null
-  }
+    forecast: null,
+  };
 
   // Handles Changes To The Zip Field
   handleChange = zip => event => {
     this.setState({ [zip]: event.target.value });
   };
 
-  // If You Dont Enter A Zip Code
-  handleClick = () => {
+  //Current Weather Data
+  handleClick = e => {
+    e.preventDefault();
     if (this.state.zip === '') return;
+    if (this.state.zip.length < 5) {
+      alert('Please enter a valid zipcode');
+      return;
+    }
+    let zipcodeTest = Number(this.state.zip);
+    if (isNaN(zipcodeTest)) {
+      alert('Please enter a valid zipcode');
+      return;
+    }
 
-    // Current Weather Data
-    fetch("http://api.openweathermap.org/data/2.5/weather?zip=" + this.state.zip + ",us&APPID=09cf8b76fde0210ec225a3bf23ccfdc0")
+    fetch('http://api.openweathermap.org/data/2.5/weather?zip=' + this.state.zip + ',us&APPID=09cf8b76fde0210ec225a3bf23ccfdc0&units=imperial')
       .then(response => {
         return response.json();
       })
       .then(currentData => {
-        this.setState({ current: currentData })
-        console.log(currentData)
+        let currentTemp = currentData.main.temp;
+        if (currentData.weather) {
+          this.setState({ weather0: currentData.weather[0].description });
+          if (currentData.weather[1]) {
+            this.setState({ weather1: currentData.weather[1].description });
+          }
+        }
+
+        this.setState({ current_temp: currentTemp });
+        this.setState({ current: currentData });
       });
 
     // Five Day Forcast
-    fetch("http://api.openweathermap.org/data/2.5/forecast?zip=" + this.state.zip + ",us&APPID=09cf8b76fde0210ec225a3bf23ccfdc0")
+    fetch('http://api.openweathermap.org/data/2.5/forecast?zip=' + this.state.zip + ',us&APPID=09cf8b76fde0210ec225a3bf23ccfdc0&units=imperial')
       .then(response => {
         return response.json();
       })
-      .then(forcastData => {
-        this.setState({ forcast: forcastData })
+      .then(forecastData => {
+        forecastData = forecastData.list
+          .map(function(item) {
+            // Got the date and used Moment to generate the Weekday in order for the day to be nicely displayed in the UI of the 5 day forecast.
+            let m = moment(item.dt_txt.split(' ')[0], 'YYYY-MM-DD');
+            m = m.format('dddd');
+            return {
+              day_of_week: m,
+              dt_txt: item.dt_txt,
+              weather: item.weather,
+              main: item.main,
+            };
+          })
+          .filter(data => {
+            // console.log(data.dt_txt);
+            // Mapped the forcast data that I needed, I filtered to return only the weather // timestamped with 00:00:00
+            let dttext = data.dt_txt.split(' ');
+            console.log(dttext);
+            let time = dttext[1];
+            if (time === '00:00:00') {
+              return data;
+            }
+          });
+        this.setState({ forecast: forecastData });
       });
-  }
+  };
 
   render() {
     const { classes } = this.props;
-    console.log(this.state)
     return (
-      <div className="App">
-      <h1>Weather App with 5day Forcast</h1>
-      <h4>created by: Lawerence Williams</h4>
-
-        <TextField
-          label=" Enter Zip Code"
-          value={this.state.zip}
-          onChange={this.handleChange('zip')}
-          margin="normal"
-        />
-        <Button variant="contained" color="primary" className={classes.button} onClick={this.handleClick}>
-          Search
-  </Button>
-
-
-
-{/* function FolderList(props) {
-  const { classes } = props;
-  return (
-    <List className={classes.root}>
-      <ListItem>
-        <Avatar>
-          <ImageIcon />
-        </Avatar>
-        <ListItemText primary="Current Temp" secondary="Jan 9, 2014" />
-      </ListItem>
-      <ListItem>
-        <Avatar>
-          <WorkIcon />
-        </Avatar>
-        <ListItemText primary="Today's Highs" secondary="Jan 7, 2014" />
-      </ListItem>
-      <ListItem>
-        <Avatar>
-          <BeachAccessIcon />
-        </Avatar>
-        <ListItemText primary="Today's Lows" secondary="July 20, 2014" />
-      </ListItem>
-      <ListItem>
-        <Avatar>
-          <BeachAccessIcon />
-        </Avatar>
-        <ListItemText primary="Current Weather Conditions" secondary="July 20, 2014" />
-      </ListItem>
-    </List>
-  );
-} */}
-
-
-        <br></br>
-        Current Temp: <h2>{this.state.current ? this.state.current.main.temp : ''}</h2>
-        High For Today: <h2>{this.state.current ? this.state.current.main.temp_max : ''}</h2>
-        Low For Today: <h2>{this.state.current ? this.state.current.main.temp_min : ''}</h2>
-        Current Weather Conditions: <h2>{this.state.current ? this.state.current.weather.description : ''}</h2>
-
-        Five day / Three Hour Forcast Data:
-        {this.state.forcast ? this.state.forcast.list.map(forcast => (
-          <div>
-            <h3>Temp: {forcast.main.temp}</h3>
-            <h3>Humidity: {forcast.main.humidity}</h3>
-          </div>
-        )) : null}
-
-
-      </div>
-    )
+      <Grid className='App'>
+        <main className={classes.main}>
+          <CssBaseline />
+          <Paper className={classes.paper} id='MainTop'>
+            <Typography component='h1' variant='h5'>
+              Weather App
+            </Typography>
+            <form className={classes.form}>
+              <FormControl margin='normal' required fullWidth>
+                <InputLabel htmlFor='zipcode'>Zipcode</InputLabel>
+                <Input id='zipcode' name='zipcode' value={this.state.zip} onChange={this.handleChange('zip')} autoComplete='zipcode' autoFocus />
+              </FormControl>
+              <Button type='submit' fullWidth variant='contained' onClick={this.handleClick} color='primary' className={classes.submit}>
+                Get Weather!
+              </Button>
+            </form>
+          </Paper>
+          <Grid container className={classes.root} spacing={16}>
+            <Grid item xs={12}>
+              <h1>{this.state.current ? this.state.current.name : ''}</h1>
+            </Grid>
+            {this.state.current_temp ? (
+              <Grid item xs={4}>
+                <Paper className={classes.paper} m={0}>
+                  <Grid container>
+                    <Grid item>
+                      Current Temp <br />
+                      <h2>
+                        {this.state.current ? this.state.current.main.temp : ''}
+                        <span>&#8457;</span>
+                      </h2>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+            ) : (
+              ''
+            )}
+            {this.state.current_temp ? (
+              <Grid item xs={4}>
+                <Paper className={classes.paper}>
+                  Todays High <br />
+                  <h2>
+                    {this.state.current ? this.state.current.main.temp_max : ''}
+                    <span>&#8457;</span>
+                  </h2>
+                </Paper>
+              </Grid>
+            ) : (
+              ''
+            )}
+            {this.state.current_temp ? (
+              <Grid item xs={4}>
+                <Paper className={classes.paper}>
+                  Todays Low <br />
+                  <h2>
+                    {this.state.current ? this.state.current.main.temp_min : ''}
+                    <span>&#8457;</span>
+                  </h2>
+                </Paper>
+              </Grid>
+            ) : (
+              ''
+            )}
+            {this.state.weather0 ? (
+              <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                  Weather Conditions <br />
+                  <h2>
+                    Expect&nbsp;
+                    {this.state.weather0 ? this.state.weather0 : ''}
+                    {this.state.weather1 ? ` and ${this.state.weather1}` : ''}
+                  </h2>
+                </Paper>
+              </Grid>
+            ) : (
+              ''
+            )}
+            <Grid xs={12}>
+              <h1>{this.state.forecast ? `Your 5 Day Weather Forecast` : ''}</h1>
+            </Grid>
+            {this.state.forecast
+              ? this.state.forecast.map(day => (
+                  <Grid item xs={4} sm={4}>
+                    <Paper className={classes.paper}>
+                      <h2>{day.day_of_week}</h2>
+                      <h3>
+                        Temp
+                        <br />
+                        {day.main.temp}
+                        {/* adds symbol for farenheight  */}
+                        <span>&#8457;</span>
+                      </h3>
+                      {/* <h3>Humidity: {forecast.main}</h3> */}
+                    </Paper>
+                  </Grid>
+                ))
+              : null}
+          </Grid>
+        </main>
+      </Grid>
+    );
   }
 }
+//Five day / Three Hour Forcast Data:
 
 export default withStyles(styles)(App);

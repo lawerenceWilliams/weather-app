@@ -1,6 +1,11 @@
+body{
+  position: absolute;
+  background-color: #dfffec;
+  margin-left: 300px;
+}
+
 .App {
   text-align: center;
-  position: absolute;
 }
 
 h1{
