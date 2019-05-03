@@ -1,6 +1,4 @@
 import React from 'react';
-// import PropTypes from 'prop-types';
-
 import Button from '@material-ui/core/Button';
 import moment from 'moment';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -59,11 +57,12 @@ class App extends React.Component {
   //Current Weather Data
   handleClick = e => {
     e.preventDefault();
-    if (this.state.zip === '') return;
-    if (this.state.zip.length < 5) {
+    if (this.state.zip.length < 5 || this.state.zip === "") {
       alert('Please enter a valid zipcode');
       return;
     }
+
+    // Check if zip code submited is a number, if not return error message
     let zipcodeTest = Number(this.state.zip);
     if (isNaN(zipcodeTest)) {
       alert('Please enter a valid zipcode');
@@ -94,7 +93,7 @@ class App extends React.Component {
       })
       .then(forecastData => {
         forecastData = forecastData.list
-          .map(function(item) {
+          .map(item=> {
             // Got the date and used Moment to generate the Weekday in order for the day to be nicely displayed in the UI of the 5 day forecast.
             let m = moment(item.dt_txt.split(' ')[0], 'YYYY-MM-DD');
             m = m.format('dddd');
@@ -126,9 +125,14 @@ class App extends React.Component {
         <main className={classes.main}>
           <CssBaseline />
           <Paper className={classes.paper} id='MainTop'>
-            <Typography component='h1' variant='h5'>
+            <Typography component='h1' variant='h2'>
               Weather App
             </Typography>
+
+            <Typography component='h1' variant='h6'>
+              created by: Lawerence Williams
+            </Typography>
+
             <form className={classes.form}>
               <FormControl margin='normal' required fullWidth>
                 <InputLabel htmlFor='zipcode'>Zipcode</InputLabel>
@@ -212,10 +216,10 @@ class App extends React.Component {
                         Temp
                         <br />
                         {day.main.temp}
-                        {/* adds symbol for farenheight  */}
+                        {/* adds symbol for fahrenheit  */}
                         <span>&#8457;</span>
                       </h3>
-                      {/* <h3>Humidity: {forecast.main}</h3> */}
+                      <p>{day.weather[0].description}</p>
                     </Paper>
                   </Grid>
                 ))
@@ -226,6 +230,5 @@ class App extends React.Component {
     );
   }
 }
-//Five day / Three Hour Forcast Data:
 
 export default withStyles(styles)(App);
