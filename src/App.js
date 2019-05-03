@@ -69,7 +69,7 @@ class App extends React.Component {
       return;
     }
 
-    fetch('http://api.openweathermap.org/data/2.5/weather?zip=' + this.state.zip + ',us&APPID=09cf8b76fde0210ec225a3bf23ccfdc0&units=imperial')
+    fetch('http://api.openweathermap.org/data/2.5/weather?zip=' + this.state.zip + ',us&APPID=' + process.env.REACT_APP_WEATHER_API_KEY + '&units=imperial')
       .then(response => {
         return response.json();
       })
@@ -87,7 +87,7 @@ class App extends React.Component {
       });
 
     // Five Day Forcast
-    fetch('http://api.openweathermap.org/data/2.5/forecast?zip=' + this.state.zip + ',us&APPID=09cf8b76fde0210ec225a3bf23ccfdc0&units=imperial')
+    fetch('http://api.openweathermap.org/data/2.5/forecast?zip=' + this.state.zip + ',us&APPID=' + process.env.REACT_APP_WEATHER_API_KEY + '&units=imperial')
       .then(response => {
         return response.json();
       })
