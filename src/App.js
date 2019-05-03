@@ -57,7 +57,7 @@ class App extends React.Component {
   //Current Weather Data
   handleClick = e => {
     e.preventDefault();
-    if (this.state.zip.length < 5 || this.state.zip === "") {
+    if (this.state.zip.length < 5 || this.state.zip === '') {
       alert('Please enter a valid zipcode');
       return;
     }
@@ -84,37 +84,42 @@ class App extends React.Component {
 
         this.setState({ current_temp: currentTemp });
         this.setState({ current: currentData });
-      });
-
-    // Five Day Forcast
-    fetch('http://api.openweathermap.org/data/2.5/forecast?zip=' + this.state.zip + ',us&APPID=' + process.env.REACT_APP_WEATHER_API_KEY + '&units=imperial')
-      .then(response => {
-        return response.json();
       })
-      .then(forecastData => {
-        forecastData = forecastData.list
-          .map(item=> {
-            // Got the date and used Moment to generate the Weekday in order for the day to be nicely displayed in the UI of the 5 day forecast.
-            let m = moment(item.dt_txt.split(' ')[0], 'YYYY-MM-DD');
-            m = m.format('dddd');
-            return {
-              day_of_week: m,
-              dt_txt: item.dt_txt,
-              weather: item.weather,
-              main: item.main,
-            };
+      .then(res => {
+        // Five Day Forcast
+        fetch('http://api.openweathermap.org/data/2.5/forecast?zip=' + this.state.zip + ',us&APPID=' + process.env.REACT_APP_WEATHER_API_KEY + '&units=imperial')
+          .then(response => {
+            return response.json();
           })
-          .filter(data => {
-            // console.log(data.dt_txt);
-            // Mapped the forcast data that I needed, I filtered to return only the weather // timestamped with 00:00:00
-            let dttext = data.dt_txt.split(' ');
-            console.log(dttext);
-            let time = dttext[1];
-            if (time === '00:00:00') {
-              return data;
-            }
+          .then(forecastData => {
+            forecastData = forecastData.list
+              .map(item => {
+                // Got the date and used Moment to generate the Weekday in order for the day to be nicely displayed in the UI of the 5 day forecast.
+                let m = moment(item.dt_txt.split(' ')[0], 'YYYY-MM-DD');
+                m = m.format('dddd');
+                return {
+                  day_of_week: m,
+                  dt_txt: item.dt_txt,
+                  weather: item.weather,
+                  main: item.main,
+                };
+              })
+              .filter(data => {
+                // console.log(data.dt_txt);
+                // Mapped the forcast data that I needed, I filtered to return only the weather // timestamped with 00:00:00
+                let dttext = data.dt_txt.split(' ');
+                console.log(dttext);
+                let time = dttext[1];
+                if (time === '00:00:00') {
+                  return data;
+                }
+              });
+            this.setState({ forecast: forecastData });
           });
-        this.setState({ forecast: forecastData });
+      })
+      .catch(e => {
+        alert('Invalid zip code provided!');
+        console.log(e);
       });
   };
 
@@ -204,7 +209,7 @@ class App extends React.Component {
             ) : (
               ''
             )}
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <h1>{this.state.forecast ? `Your 5 Day Weather Forecast` : ''}</h1>
             </Grid>
             {this.state.forecast
