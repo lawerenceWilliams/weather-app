@@ -63,7 +63,7 @@ class App extends React.Component {
     }
 
     // Check if zip code submited is a number, if not return error message
-    let zipcodeTest = Number(this.state.zip);
+    const zipcodeTest = Number(this.state.zip);
     if (isNaN(zipcodeTest)) {
       alert('Please enter a valid zipcode');
       return;
